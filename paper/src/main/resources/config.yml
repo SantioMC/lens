@@ -1,0 +1,10 @@
+#
+# Lens
+#  Server network observability
+#
+
+# The bind address (0.0.0.0 for all interfaces)
+bind-address: "0.0.0.0"
+
+# The bind port (default 9000)
+port: 9000

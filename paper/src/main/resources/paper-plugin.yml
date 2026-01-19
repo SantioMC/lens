@@ -1,0 +1,18 @@
+main: me.santio.lens.paper.LensPlugin
+api-version: '1.20'
+name: Lens
+version: 1.0.0
+description: Server network observability
+authors: [Santio71]
+dependencies:
+  server:
+    ViaVersion:
+      join-classpath: true
+      required: false
+    Floodgate:
+      join-classpath: true
+      required: false
+    packetevents:
+      join-classpath: true
+      required: false
+      load: BEFORE
