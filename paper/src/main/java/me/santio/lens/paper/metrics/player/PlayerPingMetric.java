@@ -80,7 +80,8 @@ public class PlayerPingMetric implements ResponsiveMeterBinder {
                 "bedrock", "" + isBedrock,
                 "device", device,
                 "version", version,
-                "hostname", hostname
+                "hostname", hostname,
+                "firstJoin", "" + (!player.hasPlayedBefore())
             ),
             player.getPing()
         ));
