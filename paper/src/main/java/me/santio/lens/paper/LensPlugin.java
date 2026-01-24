@@ -1,11 +1,8 @@
 package me.santio.lens.paper;
 
-import com.github.retrooper.packetevents.PacketEvents;
-import com.github.retrooper.packetevents.event.PacketListener;
-import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import io.micrometer.core.instrument.binder.MeterBinder;
 import me.santio.lens.Lens;
-import me.santio.lens.paper.metrics.server.ServerPacketsMetric;
+import me.santio.lens.paper.hooks.PacketEventsHook;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -13,8 +10,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.ServiceLoader;
 
 public class LensPlugin extends JavaPlugin {
-    
-    @SuppressWarnings("FeatureEnvy")
+
     @Override
     public void onEnable() {
         final Lens lens = Lens.instance();
@@ -30,15 +26,7 @@ public class LensPlugin extends JavaPlugin {
         
         // Register optional metrics based on installed plugins
         if (this.getServer().getPluginManager().isPluginEnabled("packetevents")) {
-            ServiceLoader.load(PacketListener.class, this.getClassLoader()).forEach((listener) -> {
-                PacketEvents.getAPI().getEventManager().registerListener(listener, PacketListenerPriority.NORMAL);
-            });
-            
-            lens.register(ServerPacketsMetric.instance());
-            PacketEvents.getAPI().getEventManager().registerListener(
-                ServerPacketsMetric.instance(),
-                PacketListenerPriority.MONITOR
-            );
+            PacketEventsHook.registerPacketEvents();
         }
         
         // Start HTTP server

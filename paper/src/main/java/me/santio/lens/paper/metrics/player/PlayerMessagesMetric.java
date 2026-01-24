@@ -1,6 +1,5 @@
 package me.santio.lens.paper.metrics.player;
 
-import com.github.retrooper.packetevents.event.PacketListener;
 import com.google.auto.service.AutoService;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.MultiGauge;
@@ -21,7 +20,7 @@ import java.util.concurrent.atomic.LongAdder;
 
 @Accessors(fluent = true)
 @AutoService(MeterBinder.class)
-public class PlayerMessagesMetric implements ResponsiveMeterBinder, PacketListener {
+public class PlayerMessagesMetric implements ResponsiveMeterBinder {
     
     @Getter
     private static PlayerMessagesMetric instance;
