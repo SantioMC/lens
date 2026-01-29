@@ -4,23 +4,23 @@ import com.google.auto.service.AutoService;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.MultiGauge;
 import io.micrometer.core.instrument.Tags;
-import io.micrometer.core.instrument.binder.MeterBinder;
-import me.santio.lens.ext.ResponsiveMeterBinder;
+import me.santio.lens.Lens;
+import me.santio.lens.model.Metric;
+import me.santio.lens.model.ResponsiveMetric;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
-@AutoService(MeterBinder.class)
-public class WorldChunksMetric implements ResponsiveMeterBinder {
+@AutoService(Metric.class)
+public class WorldChunksMetric implements ResponsiveMetric {
     
     private @MonotonicNonNull MultiGauge gauge;
     
     @Override
-    public void bindTo(@NonNull MeterRegistry registry) {
+    public void initialize(Lens lens, MeterRegistry registry) {
         this.gauge = MultiGauge.builder("lens.world.chunks")
             .description("Shows the amount of loaded chunks in each world")
             .register(registry);

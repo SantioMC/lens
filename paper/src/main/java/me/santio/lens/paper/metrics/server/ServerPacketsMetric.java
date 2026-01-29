@@ -9,7 +9,8 @@ import io.micrometer.core.instrument.MultiGauge;
 import io.micrometer.core.instrument.Tags;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import me.santio.lens.ext.ResponsiveMeterBinder;
+import me.santio.lens.Lens;
+import me.santio.lens.model.ResponsiveMetric;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.jspecify.annotations.NonNull;
@@ -22,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.LongAdder;
 
 @Accessors(fluent = true)
-public class ServerPacketsMetric implements ResponsiveMeterBinder, PacketListener {
+public class ServerPacketsMetric implements ResponsiveMetric, PacketListener {
     
     @Getter
     private static final ServerPacketsMetric instance = new ServerPacketsMetric();
@@ -30,7 +31,7 @@ public class ServerPacketsMetric implements ResponsiveMeterBinder, PacketListene
     private @MonotonicNonNull MultiGauge gauge;
     
     @Override
-    public void bindTo(@NonNull MeterRegistry registry) {
+    public void initialize(Lens lens, MeterRegistry registry) {
         this.gauge = MultiGauge.builder("lens.server.packets")
             .description("Shows the amount of ingoing and outgoing packets")
             .register(registry);

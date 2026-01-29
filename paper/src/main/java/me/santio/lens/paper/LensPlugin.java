@@ -1,6 +1,5 @@
 package me.santio.lens.paper;
 
-import io.micrometer.core.instrument.binder.MeterBinder;
 import me.santio.lens.Lens;
 import me.santio.lens.paper.hooks.PacketEventsHook;
 import org.bukkit.event.Listener;
@@ -19,7 +18,6 @@ public class LensPlugin extends JavaPlugin {
         this.getServer().getServicesManager().register(Lens.class, lens, this, ServicePriority.Normal);
         
         // Register auto-serviced components
-        ServiceLoader.load(MeterBinder.class, this.getClassLoader()).forEach(lens::register);
         ServiceLoader.load(Listener.class, this.getClassLoader()).forEach((listener) -> {
             this.getServer().getPluginManager().registerEvents(listener, this);
         });

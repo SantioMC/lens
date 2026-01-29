@@ -1,4 +1,4 @@
-package me.santio.lens.paper.metrics.server;
+package me.santio.lens.paper.metrics.player;
 
 import com.google.auto.service.AutoService;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -7,13 +7,12 @@ import me.santio.lens.model.Metric;
 import org.bukkit.Bukkit;
 
 @AutoService(Metric.class)
-public class ServerTPSMetric implements Metric {
+public class PlayerCounterMetric implements Metric {
     
     @Override
     public void initialize(Lens lens, MeterRegistry registry) {
-        lens.gauge("lens.server.tps", () -> {
-            final double tps = Bukkit.getServer().getTPS()[0];
-            return tps > 19.99 ? 20.0 : tps;
+        lens.gauge("lens.players.count", () -> {
+            return (double) Bukkit.getOnlinePlayers().size();
         });
     }
     

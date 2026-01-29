@@ -1,63 +1,45 @@
 package me.santio.lens.paper.metrics.player;
 
 import com.google.auto.service.AutoService;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.MultiGauge;
-import io.micrometer.core.instrument.Tags;
-import io.micrometer.core.instrument.binder.MeterBinder;
-import lombok.Getter;
-import lombok.experimental.Accessors;
-import me.santio.lens.ext.ResponsiveMeterBinder;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
-import org.jspecify.annotations.NonNull;
+import me.santio.lens.Lens;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.LongAdder;
 
-@AutoService(MeterBinder.class)
-@Accessors(fluent = true)
-public class PlayerDisconnectMetrics implements ResponsiveMeterBinder {
+@AutoService(Listener.class)
+public class PlayerDisconnectMetrics implements Listener {
     
-    @Getter
-    private static PlayerDisconnectMetrics instance;
+    private final PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
     
-    private @MonotonicNonNull MultiGauge gauge;
-    private final Map<String, LongAdder> reasons = new ConcurrentHashMap<>();
-    
-    @SuppressWarnings({"ThisEscapedInObjectConstruction", "AssignmentToStaticFieldFromInstanceMethod"})
-    public PlayerDisconnectMetrics() {
-        instance = this;
-    }
-    
-    @Override
-    public void bindTo(@NonNull MeterRegistry registry) {
-        this.gauge = MultiGauge.builder("lens.player.disconnects")
-            .description("Tracks the disconnect reason for why a player might have left")
-            .register(registry);
-    }
-    
-    @Override
-    public void onUpdate() {
-        final Collection<MultiGauge.Row<?>> rows = new ArrayList<>();
+    @EventHandler(priority = EventPriority.MONITOR)
+    private void onQuit(PlayerQuitEvent event) {
+        final PlayerQuitEvent.QuitReason quitReason = event.getReason();
         
-        for (var entry : this.reasons.entrySet()) {
-            rows.add(MultiGauge.Row.of(
-                Tags.of(
-                    "reason", entry.getKey()
-                ),
-                entry.getValue()
-            ));
+        // We will use the kick event for this
+        if (quitReason == PlayerQuitEvent.QuitReason.KICKED) {
+            return;
         }
         
-        this.reasons.clear();
-        this.gauge.register(rows, true);
+        final String sanitized = event.getReason().name().toLowerCase().replaceAll("_", " ");
+        Lens.instance().counter("lens.players.disconnect", Map.of(
+            "reason", sanitized,
+            "kick", "false"
+        )).increment();
     }
     
-    public void track(String reason) {
-        reasons.computeIfAbsent(reason, key -> new LongAdder()).increment();
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    private void onKick(PlayerKickEvent event) {
+        final String reason = serializer.serialize(event.reason());
+        
+        Lens.instance().counter("lens.players.disconnect", Map.of(
+            "reason", reason,
+            "kick", "true"
+        )).increment();
     }
+    
 }

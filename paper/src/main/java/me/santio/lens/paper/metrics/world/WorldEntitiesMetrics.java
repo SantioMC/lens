@@ -4,26 +4,26 @@ import com.google.auto.service.AutoService;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.MultiGauge;
 import io.micrometer.core.instrument.Tags;
-import io.micrometer.core.instrument.binder.MeterBinder;
-import me.santio.lens.ext.ResponsiveMeterBinder;
+import me.santio.lens.Lens;
+import me.santio.lens.model.Metric;
+import me.santio.lens.model.ResponsiveMetric;
 import me.santio.lens.paper.tracker.AsyncEntityTracker;
 import org.bukkit.entity.Entity;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.jetbrains.annotations.Nullable;
-import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-@AutoService(MeterBinder.class)
-public class WorldEntitiesMetrics implements ResponsiveMeterBinder {
+@AutoService(Metric.class)
+public class WorldEntitiesMetrics implements ResponsiveMetric {
     
     private @MonotonicNonNull MultiGauge gauge;
     
     @Override
-    public void bindTo(@NonNull MeterRegistry registry) {
+    public void initialize(Lens lens, MeterRegistry registry) {
         this.gauge = MultiGauge.builder("lens.world.entities")
             .description("Shows the amount of loaded entities in each world")
             .register(registry);

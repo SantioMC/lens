@@ -1,22 +1,19 @@
 package me.santio.lens.paper.metrics.player;
 
 import com.google.auto.service.AutoService;
-import io.papermc.paper.event.player.AsyncChatEvent;
 import me.santio.lens.Lens;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-
-import java.util.Map;
+import org.bukkit.event.player.PlayerJoinEvent;
 
 @AutoService(Listener.class)
-public class PlayerMessagesMetric implements Listener {
-    
+public class PlayerFirstJoinMetric implements Listener {
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    private void onMessage(AsyncChatEvent event) {
-        Lens.instance().counter("lens.players.messages", Map.of(
-            "player", event.getPlayer().getUniqueId().toString()
-        )).increment();
+    private void onPlayerJoin(PlayerJoinEvent event) {
+        if (event.getPlayer().hasPlayedBefore()) return;
+        Lens.instance().counter("lens.players.firstJoin").increment();
     }
     
 }

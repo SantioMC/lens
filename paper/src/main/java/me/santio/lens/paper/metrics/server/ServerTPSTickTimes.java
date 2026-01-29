@@ -1,20 +1,19 @@
 package me.santio.lens.paper.metrics.server;
 
 import com.google.auto.service.AutoService;
-import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.binder.MeterBinder;
+import me.santio.lens.Lens;
+import me.santio.lens.model.Metric;
 import org.bukkit.Bukkit;
-import org.jspecify.annotations.NonNull;
 
-@AutoService(MeterBinder.class)
-public class ServerTPSTickTimes implements MeterBinder {
+@AutoService(Metric.class)
+public class ServerTPSTickTimes implements Metric {
     
     @Override
-    public void bindTo(@NonNull MeterRegistry registry) {
-        Gauge.builder("lens.server.mspt", () -> {
+    public void initialize(Lens lens, MeterRegistry registry) {
+        lens.gauge("lens.server.mspt", () -> {
             return Bukkit.getServer().getAverageTickTime();
-        }).description("Shows the average millisecond duration per each tick time (mspt)").register(registry);
+        });
     }
     
 }
