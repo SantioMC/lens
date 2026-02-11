@@ -30,11 +30,7 @@ public class EventBus {
     
     public <T extends LensEvent> Subscription<T> subscribe(Class<T> clazz, Consumer<T> consumer) {
         final Subscription<T> subscription = new Subscription<>(clazz, consumer);
-        
-        final Set<Subscription<? extends LensEvent>> subscriptions = this.subscriptions.getOrDefault(clazz, new HashSet<>());
-        subscriptions.add(subscription);
-        this.subscriptions.put(clazz, subscriptions);
-        
+        this.subscriptions.computeIfAbsent(clazz, key -> new HashSet<>()).add(subscription);
         return subscription;
     }
     
