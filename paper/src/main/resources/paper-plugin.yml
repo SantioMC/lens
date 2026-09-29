@@ -4,6 +4,7 @@ name: Lens
 version: 1.0.0
 description: Server network observability
 authors: [Santio71]
+folia-supported: true
 dependencies:
   server:
     ViaVersion:

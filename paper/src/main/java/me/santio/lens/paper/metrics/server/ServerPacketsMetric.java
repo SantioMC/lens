@@ -4,6 +4,7 @@ import com.github.retrooper.packetevents.event.PacketListener;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.event.ProtocolPacketEvent;
+import com.github.retrooper.packetevents.event.UserDisconnectEvent;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.MultiGauge;
 import io.micrometer.core.instrument.Tags;
@@ -70,6 +71,22 @@ public class ServerPacketsMetric implements ResponsiveMetric, PacketListener {
         counts.computeIfAbsent(PacketKey.create(event), key -> new LongAdder()).increment();
     }
     
+    @Override
+    public void onUserDisconnect(UserDisconnectEvent event) {
+        final @Nullable UUID uniqueId = event.getUser().getUUID();
+        if (uniqueId == null) return;
+
+        final String user = uniqueId.toString();
+        counts.keySet().removeIf(key -> user.equals(key.uuid()));
+    }
+
+    /**
+     * Removes all tracked packet counts
+     */
+    public void clear() {
+        counts.clear();
+    }
+
     private record PacketKey(
         String name,
         String side,

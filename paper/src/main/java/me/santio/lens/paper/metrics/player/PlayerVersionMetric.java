@@ -22,7 +22,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @AutoService(Listener.class)
 public class PlayerVersionMetric implements Listener {
     
-    private final Map<String, SimpleGauge> versionGauge = new ConcurrentHashMap<>();
     private final Map<UUID, String> versionCache = new ConcurrentHashMap<>();
     
     private @Nullable SimpleGauge getVersionGauge(Player player) {
@@ -40,11 +39,9 @@ public class PlayerVersionMetric implements Listener {
             return null;
         }
         
-        return this.versionGauge.computeIfAbsent(version, (key) -> {
-            return Lens.instance().gauge("lens.players.version", Map.of(
-                "version", version
-            ));
-        });
+        return Lens.instance().gauge("lens.players.version", Map.of(
+            "version", version
+        ));
     }
     
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
