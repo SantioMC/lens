@@ -8,3 +8,6 @@ bind-address: "0.0.0.0"
 
 # The bind port (default 9000)
 port: 9000
+
+# How long a user needs to stay on to not be a bounce (join then leave)
+bounce-threshold: 30

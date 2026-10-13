@@ -1,6 +1,7 @@
 package me.santio.lens;
 
 import io.micrometer.core.instrument.*;
+import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.binder.MeterBinder;
 import io.micrometer.core.instrument.binder.jvm.*;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
@@ -18,6 +19,7 @@ import me.santio.lens.prometheus.PrometheusRegistry;
 import org.jetbrains.annotations.Blocking;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -186,6 +188,30 @@ public class Lens {
      */
     public DistributionSummary summary(String name) {
         return this.summary(name, null);
+    }
+
+    /**
+     * Get or register a timer metric, published as a histogram with the provided buckets
+     * @param name The name of the timer
+     * @param tags The tags associated with this entry
+     * @param buckets The upper bounds of each histogram bucket
+     * @return The associated timer metric
+     */
+    public Timer timer(String name, @Nullable Map<String, String> tags, Duration... buckets) {
+        return Timer.builder(name)
+            .tags(this.parseTags(tags))
+            .serviceLevelObjectives(buckets)
+            .register(PrometheusRegistry.meterRegistry());
+    }
+
+    /**
+     * Get or register a timer metric, published as a histogram with the provided buckets
+     * @param name The name of the timer
+     * @param buckets The upper bounds of each histogram bucket
+     * @return The associated timer metric
+     */
+    public Timer timer(String name, Duration... buckets) {
+        return this.timer(name, null, buckets);
     }
 
     /**

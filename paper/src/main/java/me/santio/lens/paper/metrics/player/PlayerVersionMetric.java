@@ -3,8 +3,7 @@ package me.santio.lens.paper.metrics.player;
 import com.google.auto.service.AutoService;
 import com.viaversion.viaversion.api.Via;
 import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
-import me.santio.lens.Lens;
-import me.santio.lens.meter.SimpleGauge;
+import me.santio.lens.meter.GroupedGauge;
 import me.santio.lens.paper.LensPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -13,56 +12,35 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 @AutoService(Listener.class)
 public class PlayerVersionMetric implements Listener {
-    
-    private final Map<UUID, String> versionCache = new ConcurrentHashMap<>();
-    
-    private @Nullable SimpleGauge getVersionGauge(Player player) {
-        final String version = versionCache.computeIfAbsent(player.getUniqueId(), (key) -> {
-            final @Nullable ProtocolVersion protocolVersion = Via.getAPI().getPlayerProtocolVersion(player.getUniqueId());
-            if (protocolVersion == null) {
-                return null;
-            }
-            
-            return protocolVersion.getName();
-        });
-        
-        if (version == null) {
-            LensPlugin.instance().getLogger().warning("Failed to get protocol version for " + player.getName() + ", they will be skipped in metrics");
-            return null;
-        }
-        
-        return Lens.instance().gauge("lens.players.version", Map.of(
-            "version", version
-        ));
-    }
-    
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+
+    private final GroupedGauge<UUID> versions = new GroupedGauge<>("lens.players.version");
+
+    @EventHandler(priority = EventPriority.MONITOR)
     private void onPlayerJoin(PlayerJoinEvent event) {
         if (!Bukkit.getServer().getPluginManager().isPluginEnabled("ViaVersion")) return;
 
-        final @Nullable SimpleGauge gauge = this.getVersionGauge(event.getPlayer());
-        if (gauge == null) return;
-        
-        gauge.increment();
+        final Player player = event.getPlayer();
+        final ProtocolVersion version = Via.getAPI().getPlayerProtocolVersion(player.getUniqueId());
+
+        if (!version.isKnown()) {
+            LensPlugin.instance().getLogger().warning("Failed to get protocol version for " + player.getName() + ", they will be skipped in metrics");
+            return;
+        }
+
+        this.versions.put(player.getUniqueId(), Map.of(
+            "version", version.getName()
+        ));
     }
-    
-    @EventHandler(priority = EventPriority.LOWEST)
+
+    @EventHandler(priority = EventPriority.MONITOR)
     private void onPlayerQuit(PlayerQuitEvent event) {
-        if (!Bukkit.getServer().getPluginManager().isPluginEnabled("ViaVersion")) return;
-        
-        final @Nullable SimpleGauge gauge = this.getVersionGauge(event.getPlayer());
-        if (gauge == null) return;
-        
-        this.versionCache.remove(event.getPlayer().getUniqueId());
-        gauge.decrement();
+        this.versions.remove(event.getPlayer().getUniqueId());
     }
-    
+
 }
