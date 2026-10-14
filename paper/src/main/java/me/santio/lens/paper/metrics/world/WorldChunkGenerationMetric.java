@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class WorldChunkGenerationMetric implements Listener {
 
     private final Map<String, Counter> counters = new ConcurrentHashMap<>();
-
+    
     private Counter counter(String world) {
         return Lens.instance().counter("lens.world.chunks.generated", Map.of("world", world));
     }

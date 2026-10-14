@@ -1899,7 +1899,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Sessions that ended within the selected time range",
+      "description": "Sessions that ended within the selected time range. Filtered by the Visit variable",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1952,7 +1952,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(increase(lens_players_session_seconds_count{instance=~\"$instance\"}[$__range]))",
+          "expr": "sum(increase(lens_players_session_seconds_count{visit=~\"$visit\", instance=~\"$instance\"}[$__range]))",
           "instant": true,
           "legendFormat": "",
           "range": false,
@@ -2020,7 +2020,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(increase(lens_players_bounces_total{first_join=\"true\", instance=~\"$instance\"}[$__range])) / sum(increase(lens_players_session_seconds_count{first_join=\"true\", instance=~\"$instance\"}[$__range]))",
+          "expr": "sum(increase(lens_players_bounces_total{visit=\"1\", instance=~\"$instance\"}[$__range])) / sum(increase(lens_players_session_seconds_count{visit=\"1\", instance=~\"$instance\"}[$__range]))",
           "instant": true,
           "legendFormat": "",
           "range": false,
@@ -2035,7 +2035,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Share of sessions shorter than the bounce-threshold configured in Lens (60 seconds by default)",
+      "description": "Share of sessions shorter than the bounce-threshold configured in Lens (60 seconds by default). Filtered by the Visit variable",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2088,7 +2088,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(increase(lens_players_bounces_total{instance=~\"$instance\"}[$__range])) / sum(increase(lens_players_session_seconds_count{instance=~\"$instance\"}[$__range]))",
+          "expr": "sum(increase(lens_players_bounces_total{visit=~\"$visit\", instance=~\"$instance\"}[$__range])) / sum(increase(lens_players_session_seconds_count{visit=~\"$visit\", instance=~\"$instance\"}[$__range]))",
           "instant": true,
           "legendFormat": "",
           "range": false,
@@ -2103,7 +2103,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Estimated from histogram buckets, sessions are recorded once the player disconnects",
+      "description": "Estimated from histogram buckets, sessions are recorded once the player disconnects. Filtered by the Visit variable",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2155,7 +2155,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.5, sum by (le) (increase(lens_players_session_seconds_bucket{instance=~\"$instance\"}[$__range])))",
+          "expr": "histogram_quantile(0.5, sum by (le) (increase(lens_players_session_seconds_bucket{visit=~\"$visit\", instance=~\"$instance\"}[$__range])))",
           "instant": true,
           "legendFormat": "",
           "range": false,
@@ -2170,7 +2170,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Sessions are recorded once the player disconnects",
+      "description": "Sessions are recorded once the player disconnects. Filtered by the Visit variable",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2222,7 +2222,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(increase(lens_players_session_seconds_sum{instance=~\"$instance\"}[$__range])) / sum(increase(lens_players_session_seconds_count{instance=~\"$instance\"}[$__range]))",
+          "expr": "sum(increase(lens_players_session_seconds_sum{visit=~\"$visit\", instance=~\"$instance\"}[$__range])) / sum(increase(lens_players_session_seconds_count{visit=~\"$visit\", instance=~\"$instance\"}[$__range]))",
           "instant": true,
           "legendFormat": "",
           "range": false,
@@ -2324,7 +2324,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(increase(lens_players_bounces_total{first_join=\"true\", instance=~\"$instance\"}[6h])) / sum(increase(lens_players_session_seconds_count{first_join=\"true\", instance=~\"$instance\"}[6h]))",
+          "expr": "sum(increase(lens_players_bounces_total{visit=\"1\", instance=~\"$instance\"}[6h])) / sum(increase(lens_players_session_seconds_count{visit=\"1\", instance=~\"$instance\"}[6h]))",
           "instant": false,
           "legendFormat": "New players",
           "range": true,
@@ -2336,15 +2336,16 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(increase(lens_players_bounces_total{instance=~\"$instance\"}[6h])) / sum(increase(lens_players_session_seconds_count{instance=~\"$instance\"}[6h]))",
+          "expr": "sum(increase(lens_players_bounces_total{visit=~\"$visit\", instance=~\"$instance\"}[6h])) / sum(increase(lens_players_session_seconds_count{visit=~\"$visit\", instance=~\"$instance\"}[6h]))",
           "instant": false,
-          "legendFormat": "All players",
+          "legendFormat": "Selected visits",
           "range": true,
           "refId": "B"
         }
       ],
       "title": "Bounce Rate (6h rolling)",
-      "type": "timeseries"
+      "type": "timeseries",
+      "description": "Filtered by the Visit variable"
     },
     {
       "datasource": {
@@ -2437,7 +2438,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.5, sum by (le) (increase(lens_players_session_seconds_bucket{instance=~\"$instance\"}[6h])))",
+          "expr": "histogram_quantile(0.5, sum by (le) (increase(lens_players_session_seconds_bucket{visit=~\"$visit\", instance=~\"$instance\"}[6h])))",
           "instant": false,
           "legendFormat": "p50",
           "range": true,
@@ -2449,7 +2450,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.9, sum by (le) (increase(lens_players_session_seconds_bucket{instance=~\"$instance\"}[6h])))",
+          "expr": "histogram_quantile(0.9, sum by (le) (increase(lens_players_session_seconds_bucket{visit=~\"$visit\", instance=~\"$instance\"}[6h])))",
           "instant": false,
           "legendFormat": "p90",
           "range": true,
@@ -2461,7 +2462,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(increase(lens_players_session_seconds_sum{instance=~\"$instance\"}[6h])) / sum(increase(lens_players_session_seconds_count{instance=~\"$instance\"}[6h]))",
+          "expr": "sum(increase(lens_players_session_seconds_sum{visit=~\"$visit\", instance=~\"$instance\"}[6h])) / sum(increase(lens_players_session_seconds_count{visit=~\"$visit\", instance=~\"$instance\"}[6h]))",
           "instant": false,
           "legendFormat": "Average",
           "range": true,
@@ -2469,14 +2470,15 @@
         }
       ],
       "title": "Session Length (6h rolling)",
-      "type": "timeseries"
+      "type": "timeseries",
+      "description": "Filtered by the Visit variable"
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Sessions that ended within the selected time range, grouped by how long they lasted",
+      "description": "Sessions that ended within the selected time range, grouped by how long they lasted. Filtered by the Visit variable",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -2536,7 +2538,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(increase(lens_players_session_seconds_bucket{le=\"60.0\", instance=~\"$instance\"}[$__range]))",
+          "expr": "sum(increase(lens_players_session_seconds_bucket{visit=~\"$visit\", le=\"60.0\", instance=~\"$instance\"}[$__range]))",
           "instant": true,
           "legendFormat": "< 1m",
           "range": false,
@@ -2548,7 +2550,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(increase(lens_players_session_seconds_bucket{le=\"300.0\", instance=~\"$instance\"}[$__range])) - sum(increase(lens_players_session_seconds_bucket{le=\"60.0\", instance=~\"$instance\"}[$__range]))",
+          "expr": "sum(increase(lens_players_session_seconds_bucket{visit=~\"$visit\", le=\"300.0\", instance=~\"$instance\"}[$__range])) - sum(increase(lens_players_session_seconds_bucket{visit=~\"$visit\", le=\"60.0\", instance=~\"$instance\"}[$__range]))",
           "instant": true,
           "legendFormat": "1-5m",
           "range": false,
@@ -2560,7 +2562,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(increase(lens_players_session_seconds_bucket{le=\"900.0\", instance=~\"$instance\"}[$__range])) - sum(increase(lens_players_session_seconds_bucket{le=\"300.0\", instance=~\"$instance\"}[$__range]))",
+          "expr": "sum(increase(lens_players_session_seconds_bucket{visit=~\"$visit\", le=\"900.0\", instance=~\"$instance\"}[$__range])) - sum(increase(lens_players_session_seconds_bucket{visit=~\"$visit\", le=\"300.0\", instance=~\"$instance\"}[$__range]))",
           "instant": true,
           "legendFormat": "5-15m",
           "range": false,
@@ -2572,7 +2574,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(increase(lens_players_session_seconds_bucket{le=\"1800.0\", instance=~\"$instance\"}[$__range])) - sum(increase(lens_players_session_seconds_bucket{le=\"900.0\", instance=~\"$instance\"}[$__range]))",
+          "expr": "sum(increase(lens_players_session_seconds_bucket{visit=~\"$visit\", le=\"1800.0\", instance=~\"$instance\"}[$__range])) - sum(increase(lens_players_session_seconds_bucket{visit=~\"$visit\", le=\"900.0\", instance=~\"$instance\"}[$__range]))",
           "instant": true,
           "legendFormat": "15-30m",
           "range": false,
@@ -2584,7 +2586,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(increase(lens_players_session_seconds_bucket{le=\"3600.0\", instance=~\"$instance\"}[$__range])) - sum(increase(lens_players_session_seconds_bucket{le=\"1800.0\", instance=~\"$instance\"}[$__range]))",
+          "expr": "sum(increase(lens_players_session_seconds_bucket{visit=~\"$visit\", le=\"3600.0\", instance=~\"$instance\"}[$__range])) - sum(increase(lens_players_session_seconds_bucket{visit=~\"$visit\", le=\"1800.0\", instance=~\"$instance\"}[$__range]))",
           "instant": true,
           "legendFormat": "30m-1h",
           "range": false,
@@ -2596,7 +2598,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(increase(lens_players_session_seconds_bucket{le=\"7200.0\", instance=~\"$instance\"}[$__range])) - sum(increase(lens_players_session_seconds_bucket{le=\"3600.0\", instance=~\"$instance\"}[$__range]))",
+          "expr": "sum(increase(lens_players_session_seconds_bucket{visit=~\"$visit\", le=\"7200.0\", instance=~\"$instance\"}[$__range])) - sum(increase(lens_players_session_seconds_bucket{visit=~\"$visit\", le=\"3600.0\", instance=~\"$instance\"}[$__range]))",
           "instant": true,
           "legendFormat": "1-2h",
           "range": false,
@@ -2608,7 +2610,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(increase(lens_players_session_seconds_bucket{le=\"14400.0\", instance=~\"$instance\"}[$__range])) - sum(increase(lens_players_session_seconds_bucket{le=\"7200.0\", instance=~\"$instance\"}[$__range]))",
+          "expr": "sum(increase(lens_players_session_seconds_bucket{visit=~\"$visit\", le=\"14400.0\", instance=~\"$instance\"}[$__range])) - sum(increase(lens_players_session_seconds_bucket{visit=~\"$visit\", le=\"7200.0\", instance=~\"$instance\"}[$__range]))",
           "instant": true,
           "legendFormat": "2-4h",
           "range": false,
@@ -2620,7 +2622,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(increase(lens_players_session_seconds_bucket{le=\"+Inf\", instance=~\"$instance\"}[$__range])) - sum(increase(lens_players_session_seconds_bucket{le=\"14400.0\", instance=~\"$instance\"}[$__range]))",
+          "expr": "sum(increase(lens_players_session_seconds_bucket{visit=~\"$visit\", le=\"+Inf\", instance=~\"$instance\"}[$__range])) - sum(increase(lens_players_session_seconds_bucket{visit=~\"$visit\", le=\"14400.0\", instance=~\"$instance\"}[$__range]))",
           "instant": true,
           "legendFormat": "4h+",
           "range": false,
@@ -2724,7 +2726,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(increase(lens_players_session_seconds_count{first_join=\"true\", instance=~\"$instance\"}[1h]))",
+          "expr": "sum(increase(lens_players_session_seconds_count{visit=\"1\", instance=~\"$instance\"}[1h]))",
           "instant": false,
           "legendFormat": "New players",
           "range": true,
@@ -2736,7 +2738,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(increase(lens_players_session_seconds_count{first_join=\"false\", instance=~\"$instance\"}[1h]))",
+          "expr": "sum(increase(lens_players_session_seconds_count{visit!=\"1\", instance=~\"$instance\"}[1h]))",
           "instant": false,
           "legendFormat": "Returning players",
           "range": true,
@@ -5768,6 +5770,56 @@
         "regex": "",
         "sort": 1,
         "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "description": "Which visit a session was, 1 being the player's first time on the server",
+        "includeAll": true,
+        "label": "Visit",
+        "multi": true,
+        "name": "visit",
+        "options": [
+          {
+            "selected": true,
+            "text": "All",
+            "value": "$__all"
+          },
+          {
+            "selected": false,
+            "text": "1",
+            "value": "1"
+          },
+          {
+            "selected": false,
+            "text": "2",
+            "value": "2"
+          },
+          {
+            "selected": false,
+            "text": "3",
+            "value": "3"
+          },
+          {
+            "selected": false,
+            "text": "4",
+            "value": "4"
+          },
+          {
+            "selected": false,
+            "text": "5+",
+            "value": "5+"
+          }
+        ],
+        "query": "1,2,3,4,5+",
+        "type": "custom"
       }
     ]
   },

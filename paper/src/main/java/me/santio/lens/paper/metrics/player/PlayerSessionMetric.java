@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
 import me.santio.lens.Lens;
 import me.santio.lens.paper.LensPlugin;
+import org.bukkit.Statistic;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -14,13 +15,13 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Tracks how long players stay connected for, sessions are recorded once the player disconnects.
- * Sessions shorter than the configured bounce threshold are additionally counted as bounces.
  * @author santio
  */
 @AutoService(Listener.class)
@@ -44,34 +45,49 @@ public class PlayerSessionMetric implements Listener {
         Duration.ofHours(8)
     };
 
+    private static final List<String> VISITS = List.of("1", "2", "3", "4", "5+");
+
     private final Map<UUID, Session> sessions = new ConcurrentHashMap<>();
     private final Duration bounceThreshold = Duration.ofSeconds(
         LensPlugin.instance().getConfig().getLong("bounce-threshold", 30)
     );
 
     public PlayerSessionMetric() {
-        for (boolean firstJoin : new boolean[] {true, false}) {
-            this.timer(firstJoin);
-            this.bounces(firstJoin);
+        for (String visit : VISITS) {
+            this.timer(visit);
+            this.bounces(visit);
         }
     }
 
-    private Map<String, String> tags(boolean firstJoin) {
-        return Map.of("first_join", String.valueOf(firstJoin));
+    /**
+     * Gets which visit the player is currently on, based on the amount of times they have left before
+     * @param player The player to get the visit of
+     * @return The visit number, visits past the last tracked visit are grouped together
+     */
+    private String visit(Player player) {
+        // this is kinda a wacky way of doing this, but it does work fairly well and avoids persistence on our end
+        final int visit = player.getStatistic(Statistic.LEAVE_GAME) + 1;
+        final int index = Math.min(visit, VISITS.size()) - 1;
+
+        return VISITS.get(index);
     }
 
-    private Timer timer(boolean firstJoin) {
-        return Lens.instance().timer(SESSION_METRIC, this.tags(firstJoin), BUCKETS);
+    private Map<String, String> tags(String visit) {
+        return Map.of("visit", visit);
     }
 
-    private Counter bounces(boolean firstJoin) {
-        return Lens.instance().counter(BOUNCE_METRIC, this.tags(firstJoin));
+    private Timer timer(String visit) {
+        return Lens.instance().timer(SESSION_METRIC, this.tags(visit), BUCKETS);
+    }
+
+    private Counter bounces(String visit) {
+        return Lens.instance().counter(BOUNCE_METRIC, this.tags(visit));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     private void onPlayerJoin(PlayerJoinEvent event) {
         final Player player = event.getPlayer();
-        final Session session = new Session(System.nanoTime(), !player.hasPlayedBefore());
+        final Session session = new Session(System.nanoTime(), this.visit(player));
 
         this.sessions.put(player.getUniqueId(), session);
     }
@@ -82,13 +98,12 @@ public class PlayerSessionMetric implements Listener {
         if (session == null) return;
 
         final Duration duration = Duration.ofNanos(System.nanoTime() - session.joinedAt());
-        this.timer(session.firstJoin()).record(duration);
+        this.timer(session.visit()).record(duration);
 
         if (duration.compareTo(this.bounceThreshold) >= 0) return;
-
-        this.bounces(session.firstJoin()).increment();
+        this.bounces(session.visit()).increment();
     }
 
-    private record Session(long joinedAt, boolean firstJoin) {}
+    private record Session(long joinedAt, String visit) {}
 
 }
