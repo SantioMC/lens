@@ -3,44 +3,33 @@ package me.santio.lens.paper.metrics.player;
 import com.google.auto.service.AutoService;
 import com.viaversion.viaversion.api.Via;
 import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
-import me.santio.lens.meter.GroupedGauge;
 import me.santio.lens.paper.LensPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Map;
-import java.util.UUID;
 
 @AutoService(Listener.class)
-public class PlayerVersionMetric implements Listener {
+public class PlayerVersionMetric extends PlayerGroupMetric {
 
-    private final GroupedGauge<UUID> versions = new GroupedGauge<>("lens.players.version");
+    public PlayerVersionMetric() {
+        super("lens.players.version");
+    }
 
-    @EventHandler(priority = EventPriority.MONITOR)
-    private void onPlayerJoin(PlayerJoinEvent event) {
-        if (!Bukkit.getServer().getPluginManager().isPluginEnabled("ViaVersion")) return;
+    @Override
+    protected @Nullable Map<String, String> tags(Player player) {
+        if (!Bukkit.getServer().getPluginManager().isPluginEnabled("ViaVersion")) return null;
 
-        final Player player = event.getPlayer();
         final ProtocolVersion version = Via.getAPI().getPlayerProtocolVersion(player.getUniqueId());
 
         if (!version.isKnown()) {
             LensPlugin.instance().getLogger().warning("Failed to get protocol version for " + player.getName() + ", they will be skipped in metrics");
-            return;
+            return null;
         }
 
-        this.versions.put(player.getUniqueId(), Map.of(
-            "version", version.getName()
-        ));
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR)
-    private void onPlayerQuit(PlayerQuitEvent event) {
-        this.versions.remove(event.getPlayer().getUniqueId());
+        return Map.of("version", version.getName());
     }
 
 }
